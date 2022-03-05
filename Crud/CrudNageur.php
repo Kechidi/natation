@@ -1,0 +1,242 @@
+<?php
+
+namespace natation;
+
+use natation\MyPDO;
+
+require_once "../Vue/VueNageur.php";
+require_once "../Connexion/VariableDsn.php";
+require_once "../Connexion/MyPDO.php";
+require_once "../Entite/EntiteNageur.php";
+
+
+
+function getDebutHTML(): string
+{
+    return "<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset=" . "'utf-8'" . ">
+    <meta http-equiv=" . "'X-UA-Compatible'" . " content=" . "'IE=edge'" . ">
+    <meta name=" . "'viewport'" . " content=" . "width=device-width, initial-scale=1" . ">
+    <title>NAGEUR</title>
+    <link href='style.css' rel='stylesheet'>
+    <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl' crossorigin='anonymous'>
+   
+  </head>
+  
+  <body class='bg-img7'>
+ <link rel=" . "'stylesheet'" . " href=" . "'https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css'" . ">
+    <script defer src=" . "'https://use.fontawesome.com/releases/v5.3.1/js/all.js'" . "></script>
+   <br><br>
+
+    <section>
+    <center>
+    <nav class='navbar is-success is-fixed-top' role='navigation' aria-label='main navigation'>
+  <div class='navbar-brand'>
+ 
+    <a class='navbar-item' href='index.php'>
+      <img src='./Image/logo.png' width='112' height='28'>
+    </a>
+
+    <a role=button' class='navbar-burger burger' aria-label='menu' aria-expanded='false' data-target='navbarBasicExample'>
+      <span aria-hidden='true'></span>
+      <span aria-hidden='true'></span>
+      <span aria-hidden='true'></span>
+    </a>
+  </div>
+
+  <div id='navbarBasicExample' class='navbar-menu'>
+    <div class='navbar-start'>
+    <a class='navbar-item' href='index.php'>
+        Accueil
+      </a>
+      <a class='navbar-item' href='CrudNageur.php'>
+        nageur
+      </a>
+      <a class='navbar-item' href='CrudEpreuve.php'>
+        Epreuve
+      </a>
+
+      </div>
+        </div>
+        </nav>
+
+    </section>
+ 
+    &nbsp;
+    <center><h1 id='titre'>Liste des nageurs </h1></center>&nbsp;
+";
+}
+
+function getFinHTML(): string
+{
+    return "
+   </body>
+<link href='style.css' rel='stylesheet'>
+    
+  <footer class='footer'>
+    <div class='footer-left'>
+        <img src='logo.jpeg' alt=''>
+        
+        <p class='box' id='box'><br>jeux olympique de natation , vous trouverez si dessous toute les information
+        nécessaire pour nous contacter,le code source, les framwark utiliser</p><br>
+        
+        <div class='socials'>
+            <a href='https://getbootstrap.com/'><i class='bootsrapicone'><img src='./Image/bootstrap_4-icon.png'></i></a>
+            <a href='https://webmail.univ-lehavre.fr/SOGo/so/am184100/Mail/#!/Mail/0/INBOX'><i class='emailicone'><img src='./Image/mail.jpg'></i></a>
+            <a href='https://www-apps.univ-lehavre.fr/forge/users/sign_in'><i class='gitlabicone'><img src='./Image/gitlab.png'></i></a>
+            <a href='#'><i class='githubicone'><img src='./Image/github.png'></i></a>
+            <a href='https://bulma.io/'><i class='bulmaicone'><img src='./Image/bulma.png'></i></a>
+            
+        </div>
+    </div>
+    
+    <ul class='footer-right'>
+    
+     <li >
+        <h2>Membres de group</h2>
+        <ul class='box'>
+            <li ><a>thiziri kechidi </a></li>
+            <li><a>salim mahdjane</a></li>
+            <li><a >rafik tekfa</a></li>
+            <li><a >mourad hadjali</a></li>
+            
+        </ul>
+    </li>
+    <li class='features'>
+        <h2>Adresse Mail</h2>
+        <ul class='box'>
+            <li><a>thiziri.kechidi@etu.univ-lehavre.fr</a></li>
+            <li><a>salim.mahdjane@etu.univ-lehavre.fr</a></li>
+            <li><a>rafik.tekfa@etu.univ-lehavre.fr</a></li>
+            <li><a>mourad.hajdali@etu.univ-lehavre.fr</a></li>
+
+        </ul>
+    </li>
+    <li >
+        <h2>Contenue Page</h2>
+        <ul class='box' >
+          
+        </ul>
+    </li>
+    </ul>
+    <div class='footer-bottom'>
+        <p>PROJET INFO POUR LE WEB  &copy;COUD </p>
+    </div>
+</footer>
+
+</html>
+";
+}
+
+
+session_start();
+
+// initialisation de la connexion via l'instance de MyPDO
+$myPDONageur = new MyPDO('mysql', $_ENV['host'], $_ENV['db'], $_ENV['user'], $_ENV['password'], 'nageur');
+
+
+
+$vue = new \natation\VueNageur();
+
+$contenu = "";
+$message = "";
+
+
+// traitement des différentes actions possibles
+
+
+if (isset($_GET['action']))
+    switch ($_GET['action']) {
+        case 'read':
+            $nageur = $myPDONageur->get('id_nageur', $_GET['id_nageur']);
+            $contenu .= $vue->getHTML4Nageur($nageur);
+            $_SESSION['etat'] = 'lecture';
+            break;
+        case 'create':
+            $nbNageurs = $myPDONageur->count();
+            $contenu .= $vue->getFormulaire4Nageur(array('id_nageur' => array('type' => 'number', 'default' => $nbNageurs + 1), 'nom_nageur' => 'text', 'prenom_nageur' => 'text', 'pays_nageur' => 'text', 'sexe_nageur' => 'text'));
+            $_SESSION['etat'] = 'création';
+            break;
+        case 'update':
+            $nageur = $myPDONageur->get('id_nageur', $_GET['id_nageur']);
+            $contenu .= $vue->getFormulaire4Nageur(array(
+                'id_nageur' => array('type' => 'number', 'default' => $nageur->getIdNageur()),
+                'nom_nageur' => array('type' => 'text', 'default' => $nageur->getNomNageur()),
+                'prenom_nageur' => array('type' => 'text', 'default' => $nageur->getPrenomNageur()),
+                'pays_nageur' => array('type' => 'text', 'default' => $nageur->getPaysNageur()),
+                'sexe_nageur' => array('type' => 'text', 'default' => $nageur->getSexeNageur()),
+            ));
+            $_SESSION['etat'] = 'modification';
+            break;
+        case 'delete':
+            $myPDONageur->delete(array('id_nageur' => $_GET['id_nageur']));
+            $_SESSION['etat'] = 'suppression';
+            break;
+        default:
+            $message .= "<p>Action " . $_GET['action'] . " non implémentée.</p>\n";
+    }
+
+else
+    if (isset($_SESSION['etat']))
+    switch ($_SESSION['etat']) {
+        case 'création':
+            $myPDONageur->insert(array('id_nageur' => $_GET['null'], 'nom_nageur' => $_GET['nom_nageur'], 'prenom_nageur' => $_GET['prenom_nageur'], 'pays_nageur' => $_GET['pays_nageur'], 'sexe_nageur' => $_GET['sexe_nageur']));
+            $_SESSION['etat'] = 'créé';
+            break;
+        case 'modification':
+            $myPDONageur->update('id_nageur', array('id_nageur' => $_GET['id_nageur'], 'nom_nageur' => $_GET['nom_nageur'], 'prenom_nageur' => $_GET['prenom_nageur'], 'pays_nageur' => $_GET['pays_nageur'], 'sexe_nageur' => $_GET['sexe_nageur']));
+            $_SESSION['etat'] = 'modifié';
+            break;
+        case 'suppression':
+            $_SESSION['etat'] = 'supprimé';
+            break;
+        case 'créé':
+        case 'modifié':
+        case 'supprimé':
+        default:
+            $_SESSION['etat'] = 'neutre';
+    }
+
+
+// affichage du nombre total de nageur :
+$nbNageurs = $myPDONageur->count();
+$message .= "<h1>La table nageur contient " . $nbNageurs . " enregistrements.</h1>\n";
+
+// sélection/modification/suppression/ d'un nageur
+
+$contenu .=
+    "
+<div><div class='column is-1 '></div><div class='column'><form action='?' method='GET'><table class='table is-striped is-narrow is-hoverable is-fullwidth'>
+    <tr><td>
+    <select class='select is-rounded is-fullwidth is-black is-size-6'  name='action'>
+    <option value='read'>Consulter la fiche d'un nageur</option>
+    <option value='update'>Modifier les informations d'un nageur</option>
+    <option value='delete'>Supprimer un nageur de la base de données</option>
+</select></td>
+<td><input class='input is-black' type='number' min='1' max='100' name='id_nageur'/></td>
+<td><input class='button is-fullwidth is-black is-outlined' type='submit' name='envoi' value='Appliquer' /></td></tr>
+</table></form></div><div class='column is-1'></div></div>\n";
+
+
+
+// création d'un nouveau nageur
+// Attention suppose que le nombre de nageurs présent correspond au dernier identifiant attribué...
+$contenu .= "<p><a href='?action=create'>Créer nageur";
+$contenu .= $nbNageurs + 1;
+$contenu .= "</a> </p>";
+
+// récupération et affichage de la liste des nageurs avec liens vers édition/suppresion
+
+
+$lesNageurs = $myPDONageur->getAll();
+$contenu .= $vue->getAllNageur($lesNageurs);
+
+
+
+// Production de la page HTML
+echo getDebutHTML();
+echo $message;
+echo $contenu;
+echo getFinHTML();
